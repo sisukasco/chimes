@@ -1,0 +1,58 @@
+{
+  "name": "@sisukas/chimes",
+  "version": "1.0.0",
+  "description": "Authentication library",
+  "main": "dist/chimes.cjs.js",
+  "module": "dist/chimes.esm.js",
+  "unpkg": "dist/chimes.min.js",
+  "types": "dist/index.d.ts",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist/*"
+  ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "prebuild": "yarn clean",
+    "build": "cross-env NODE_ENV=production rollup -c ",
+    "watch": "cross-env NODE_ENV=development rollup -c --watch",
+    "release": "yarn publish --no-git-tag-version --access public",
+    "test": "jest",
+    "lint": "eslint 'src/**/*.{js,ts}'"
+  },
+  "keywords": [
+    "JWT",
+    "API Login using JWT"
+  ],
+  "author": "Prasanth Janardhanan",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "axios-extensions": "^3.1.3",
+    "b2a": "^1.1.2",
+    "expr-eval": "^2.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.11.1",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-typescript": "^7.10.4",
+    "@rollup/plugin-babel": "^5.2.0",
+    "@rollup/plugin-commonjs": "^15.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^9.0.0",
+    "@rollup/plugin-typescript": "^5.0.2",
+    "@types/b2a": "^1.0.0",
+    "@types/qs": "^6.9.5",
+    "@typescript-eslint/eslint-plugin": "^3.9.0",
+    "@typescript-eslint/parser": "^3.9.0",
+    "cross-env": "^7.0.2",
+    "eslint": "^7.6.0",
+    "jest": "^26.4.0",
+    "rimraf": "^3.0.0",
+    "rollup": "^2.25.0",
+    "rollup-plugin-terser": "^7.0.0",
+    "rollup-plugin-typescript2": "^0.27.2",
+    "ts-jest": "^26.2.0",
+    "tslib": "^2.0.1",
+    "typescript": "^3.9.7"
+  }
+}
