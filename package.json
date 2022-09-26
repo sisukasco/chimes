@@ -1,6 +1,6 @@
 {
   "name": "@sisukas/chimes",
-  "version": "1.0.1",
+  "version": "1.0.5",
   "description": "Authentication library",
   "main": "dist/chimes.cjs.js",
   "module": "dist/chimes.esm.js",
