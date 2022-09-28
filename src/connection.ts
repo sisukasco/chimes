@@ -30,6 +30,7 @@ export default class Connection
     
     public async request(path:string, options:any){
         const defaults = { url: this.fullUrl(path), withCredentials: true }
+        console.log("new cached req ")
         return this.http({...options, ...defaults})
                     .then((resp)=>
                     {

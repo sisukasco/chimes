@@ -1,58 +1,63 @@
 {
   "name": "@sisukas/chimes",
-  "version": "1.0.5",
-  "description": "Authentication library",
-  "main": "dist/chimes.cjs.js",
-  "module": "dist/chimes.esm.js",
-  "unpkg": "dist/chimes.min.js",
-  "types": "dist/index.d.ts",
+  "version": "1.0.6",
+  "license": "MIT",
+  "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
-    "dist/*"
+    "dist",
+    "src"
   ],
-  "scripts": {
-    "clean": "rimraf dist",
-    "prebuild": "yarn clean",
-    "build": "cross-env NODE_ENV=production rollup -c ",
-    "watch": "cross-env NODE_ENV=development rollup -c --watch",
-    "release": "yarn publish --access public",
-    "test": "jest",
-    "lint": "eslint 'src/**/*.{js,ts}'"
+  "engines": {
+    "node": ">=10"
   },
-  "keywords": [
-    "JWT",
-    "API Login using JWT"
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "size": "size-limit",
+    "analyze": "size-limit --why",
+    "release": "yarn publish --access public"
+  },
+  "peerDependencies": {},
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "author": "Prasanth Janardanan",
+  "module": "dist/chimes.esm.js",
+  "size-limit": [
+    {
+      "path": "dist/chimes.cjs.production.min.js",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/chimes.esm.js",
+      "limit": "10 KB"
+    }
   ],
-  "author": "Prasanth Janardhanan",
-  "license": "MIT",
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "^6.0.4",
+    "@types/b2a": "^1.0.0",
+    "@types/qs": "^6.9.7",
+    "husky": "^7.0.4",
+    "size-limit": "^6.0.4",
+    "tsdx": "^0.14.1",
+    "tslib": "^2.3.1",
+    "typescript": "^4.4.4"
+  },
   "dependencies": {
     "axios": "^0.24.0",
     "axios-extensions": "^3.1.3",
-    "b2a": "^1.1.2",
-    "expr-eval": "^2.0.2"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.11.1",
-    "@babel/preset-env": "^7.11.0",
-    "@babel/preset-typescript": "^7.10.4",
-    "@rollup/plugin-babel": "^5.2.0",
-    "@rollup/plugin-commonjs": "^15.0.0",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^9.0.0",
-    "@rollup/plugin-typescript": "^5.0.2",
-    "@types/b2a": "^1.0.0",
-    "@types/qs": "^6.9.5",
-    "@typescript-eslint/eslint-plugin": "^3.9.0",
-    "@typescript-eslint/parser": "^3.9.0",
-    "cross-env": "^7.0.2",
-    "eslint": "^7.6.0",
-    "jest": "^26.4.0",
-    "rimraf": "^3.0.0",
-    "rollup": "^2.25.0",
-    "rollup-plugin-terser": "^7.0.0",
-    "rollup-plugin-typescript2": "^0.27.2",
-    "ts-jest": "^26.2.0",
-    "tslib": "^2.0.1",
-    "typescript": "^3.9.7"
+    "b2a": "^1.1.2"
   }
 }
