@@ -75,7 +75,6 @@ export default class User implements RemoteConnection
             return null
         }
         const strUser = localStorage.getItem(storageKey)
-        console.log("loading user info from localstorage ", strUser)
         if(!strUser){
             return null;
         }
@@ -183,7 +182,6 @@ export default class User implements RemoteConnection
                 'content-type': 'application/x-www-form-urlencoded;charset=utf-8'
                 }
             })
-            console.log("new token ", new_token)
             if(new_token.access_token){
                 this.token = new_token
                 this.saveSession()

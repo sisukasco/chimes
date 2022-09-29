@@ -38,7 +38,6 @@ export default class Chimes{
                 method: 'post',
                 data: {token, password}
                 })            
-            console.log("resetPassword res ", res);
             return res;
         }
         catch(err){
@@ -53,7 +52,6 @@ export default class Chimes{
                 method: 'post',
                 data: {email}
                 })            
-            console.log("forgot res ", res);
             return res;
         }
         catch(err){
@@ -68,7 +66,6 @@ export default class Chimes{
                 method: 'post',
                 data: {token}
                 })            
-            console.log("confirm res ", res);
             if(this.user){
                 await this.user.loadUserData()
             }
@@ -86,7 +83,6 @@ export default class Chimes{
                 method: 'post',
                 data: {code}
                 })            
-            console.log("confirm res ", res);
             if(this.user){
                 await this.user.loadUserData()
             }
@@ -122,7 +118,7 @@ export default class Chimes{
             return { ok:true };
         }
         catch(err){
-            console.log(" error caught in login ", err)
+            console.error(" error caught in login ", err)
             const e ={
                 msg : (<any>err).error_description , 
                 code: 400//TODO; get the correct error code in connection error handler
