@@ -1,4 +1,4 @@
 
 export interface LoginObserver{
-    onLogin():void
+    onLogin(): void;
 }

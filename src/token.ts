@@ -1,4 +1,4 @@
 
 export interface TokenProvider{
-    getJWTAccessToken():Promise<string>
+    getJWTAccessToken(): Promise<string>;
 }

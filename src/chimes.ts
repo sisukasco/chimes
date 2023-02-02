@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 import qs from 'qs';
 import User, {TokenResponse} from './user';
@@ -9,10 +10,10 @@ import Service from "./service"
 
 export default class Chimes{
     private auth_connection: Connection;
-    public user:User|null=null;
-    private interestedLogin:LoginObserver|null=null;
+    public user: User|null=null;
+    private interestedLogin: LoginObserver|null=null;
     
-    constructor(auth_url?:string, aud?:string){
+    constructor(auth_url?: string, aud?: string){
         if(!aud){
             aud=""
         }
@@ -22,8 +23,8 @@ export default class Chimes{
         this.user = User.loadFromStorage(this.auth_connection)
     }
     
-    public get loggedIn():boolean{
-        return(this.user ? true: false);
+    public get loggedIn(): boolean{
+        return (this.user && this.user.info ? true:false)
     }
     
     public async signup(email: string, password: string, data={}) {
@@ -32,7 +33,7 @@ export default class Chimes{
             data: {email,password,data}
             })
     }
-    public async resetPassword(token:string, password: string){
+    public async resetPassword(token: string, password: string){
         try{
             const res = await this.auth_connection.request('/reset/update',{
                 method: 'post',
@@ -94,7 +95,7 @@ export default class Chimes{
 
         return true;
     }
-    public letMeKnow(me:LoginObserver){
+    public letMeKnow(me: LoginObserver){
      this.interestedLogin = me;   
     }
     public async login(email: string, password: string) {
@@ -120,7 +121,7 @@ export default class Chimes{
         catch(err){
             console.error(" error caught in login ", err)
             const e ={
-                msg : (<any>err).error_description , 
+                msg : (err as any).error_description , 
                 code: 400//TODO; get the correct error code in connection error handler
             };
             throw e;
@@ -132,7 +133,7 @@ export default class Chimes{
         this.user = null
     }
     
-    private  async initUser(tok:TokenResponse){
+    private  async initUser(tok: TokenResponse){
         try{
             const u = new User(this.auth_connection, tok);
             await u.loadUserData();
@@ -144,7 +145,7 @@ export default class Chimes{
         }
 
     }
-    public externalLoginRedirect(provider:string){
+    public externalLoginRedirect(provider: string){
         this.auth_connection.redirectTo("/authorize", {provider})
     }
     public async handleExternalLogin(ticket: string){
@@ -166,16 +167,16 @@ export default class Chimes{
         
     }
     
-    public getService(name:string,endpoint:string):RemoteConnection{
+    public getService(name: string,endpoint: string): RemoteConnection{
         
         return new Service(name, endpoint)
     }
     
-    public getAuthService():RemoteConnection|null{
+    public getAuthService(): RemoteConnection|null{
         return this.user
     }
     
-    public getAPIService(name:string):RemoteConnection|null{
+    public getAPIService(name: string): RemoteConnection|null{
         if(!this.user)
         {
             return null
@@ -183,7 +184,7 @@ export default class Chimes{
         return this.user.createService(name)
     }
     
-    public getAuthedAPIService(name:string, endPoint:string):RemoteConnection|null{
+    public getAuthedAPIService(name: string, endPoint: string): RemoteConnection|null{
         
         if(!this.user)
         {

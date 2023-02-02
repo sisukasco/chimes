@@ -1,3 +1,3 @@
 export interface RemoteConnection{
-    request(path:string, data:any):Promise<any>
+    request(path: string, data: any): Promise<any>;
 }

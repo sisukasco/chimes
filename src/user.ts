@@ -4,49 +4,50 @@ import {RemoteConnection} from './request';
 import qs from 'qs';
 import {atob} from 'b2a';
 import Service from "./service"
+import { InvalidToken } from "./error";
 
 const storageKey = "chimes.user"
 
 type ServiceEndPoints={
-    [name:string]:string
+    [name: string]: string;
 }
 
 export type TokenResponse={
-    access_token:string,
-    token_type: string,
-    expires_in: number,
-    expires_at: number,
-    refresh_token: string
+    access_token: string;
+    token_type: string;
+    expires_in: number;
+    expires_at: number;
+    refresh_token: string;
 }
 export type UserInfo ={
-    id:"",
-    first_name: string,
-    last_name: string,
-    email: string,
-    avatar_url: string,
-    email_confirmed: boolean,
-    paid_user: boolean,
-    endpoints: ServiceEndPoints
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    avatar_url: string;
+    email_confirmed: boolean;
+    paid_user: boolean;
+    endpoints: ServiceEndPoints;
 }
 
 
 type UserData={
-    token:TokenResponse,
-    info: UserInfo
+    token: TokenResponse;
+    info: UserInfo|null;
 }
 
 
 export default class User implements RemoteConnection
 {
-    public info:UserInfo={id:"", first_name:"", last_name:"", email:"", avatar_url:"", email_confirmed:false,paid_user: false, endpoints:{}}
+    public info: UserInfo|null=null
     
     constructor(private connection: Connection, 
-                private token:TokenResponse)
+                private token: TokenResponse)
     {
         this.processTokenResponse(token)
     }
     
-    private processTokenResponse(tok:TokenResponse){
+    private processTokenResponse(tok: TokenResponse){
         this.token = tok;
         let claims
         try {
@@ -59,7 +60,7 @@ export default class User implements RemoteConnection
     
     public saveSession(){
         if(isBrowser()){
-            const u:UserData={
+            const u: UserData={
                 token:this.token,
                 info: this.info
             }
@@ -70,7 +71,7 @@ export default class User implements RemoteConnection
         //TODO: call logout end point
         localStorage.removeItem(storageKey)
     }
-    public static loadFromStorage(connection: Connection):User|null{
+    public static loadFromStorage(connection: Connection): User|null{
         if(!isBrowser()){
             return null
         }
@@ -87,14 +88,21 @@ export default class User implements RemoteConnection
         return u;
     }
     
-    public async getJWTAccessToken():Promise<string>{
+    public async getJWTAccessToken(): Promise<string> {
         const ExpiryMargin = 60 * 1000;
+        let access_token =""
         if((this.token.expires_at - ExpiryMargin) < Date.now()){
-            return this.renewRefreshToken(this.token.refresh_token)
+            access_token =  await this.renewRefreshToken(this.token.refresh_token)
         }else{
-            return Promise.resolve(this.token.access_token);
+            access_token  = this.token.access_token;
         }
+        if(!access_token){
+            throw new InvalidToken("Invalid access token")
+        }
+
+        return access_token
     }
+
     public async loadUserData(){
         try{
             this.info = await this.request("/user")
@@ -107,7 +115,7 @@ export default class User implements RemoteConnection
         }
     }
     
-    public async request(path: string, data:any={}){
+    public async request(path: string, data: any={}){
         try{
             const token = await this.getJWTAccessToken()
             if(token === ""){
@@ -122,7 +130,7 @@ export default class User implements RemoteConnection
         }
     }
     
-    public async updatePassword(old:string, newPwd:string){
+    public async updatePassword(old: string, newPwd: string){
         try{
             const res = await this.request('/user/update/password',{
                 method:'post',
@@ -136,7 +144,7 @@ export default class User implements RemoteConnection
         }
     }
     
-    public async saveProfileField(field_name:string, value:string){
+    public async saveProfileField(field_name: string, value: string){
         try{
             const res = await this.request('/user/profile',{
                 method:'post',
@@ -146,7 +154,10 @@ export default class User implements RemoteConnection
               field_name == "last_name" ||
               field_name == "email")
               {
-                this.info[field_name] = value;
+                if(this.info){
+                    this.info[field_name] = value;
+                }
+                
                 this.saveSession()
               }
             return res;
@@ -156,6 +167,7 @@ export default class User implements RemoteConnection
            throw e; 
         }
     }
+
     public async resendConfirmationEmail(){
         try{
             const res = await this.request('/user/resend/conf/email',{
@@ -170,9 +182,10 @@ export default class User implements RemoteConnection
         }
 
     }
-    private async renewRefreshToken(refresh_token:string){
+    private async renewRefreshToken(refresh_token: string){
+        let newToken: any = {}
         try{
-            const new_token = await this.connection.request('/token',{
+            newToken = await this.connection.request('/token',{
                 method:'post',
                 data: qs.stringify({
                     grant_type: "refresh_token",
@@ -182,21 +195,23 @@ export default class User implements RemoteConnection
                 'content-type': 'application/x-www-form-urlencoded;charset=utf-8'
                 }
             })
-            if(new_token.access_token){
-                this.token = new_token
-                this.saveSession()
-                return new_token.access_token
-            }else{
-                throw new Error("empty access token from the server")
-            }
+        }catch(err){
+            this.info=null
+            throw new InvalidToken("Error trying to renew refresh token." + err)
         }
-        catch(err){
-            throw err
+
+        if(newToken.access_token){
+            this.token = newToken
+            this.saveSession()
+            return newToken.access_token
+        }else{
+            this.info=null
+            throw new InvalidToken("Received empty access token from the server while renewing refresh token.")
         }
     }
     
-    public createService(name:string):Service|null{
-        if(this.info.endpoints[name])
+    public createService(name: string): Service|null{
+        if(this.info && this.info.endpoints[name])
         {
             return new Service(name, this.info.endpoints[name], this)
         }

@@ -6,9 +6,9 @@ import { throttleAdapterEnhancer } from 'axios-extensions';
 
 export default class Connection
 {
-    private http:AxiosInstance
+    private http: AxiosInstance
     constructor(
-        private api_url:string)
+        private api_url: string)
     {
         //The current setup only prevents frequent request to the same end point
         // This works for now.
@@ -22,13 +22,13 @@ export default class Connection
         return joinURL(this.api_url, path)
     }
     
-    public redirectTo(path:string, params:any){
+    public redirectTo(path: string, params: any){
         if(window && window.location){
             window.location.href = this.fullUrl(path)+"?"+qs.stringify(params)    
         }
     }
     
-    public async request(path:string, options:any){
+    public async request(path: string, options: any){
         const defaults = { url: this.fullUrl(path), withCredentials: true }
         return this.http({...options, ...defaults})
                     .then((resp)=>
