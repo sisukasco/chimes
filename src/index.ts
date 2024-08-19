@@ -1,12 +1,17 @@
 import Chimes from './chimes'
-import {RemoteConnection} from './request';
-import {LoginObserver} from './observer';
-import {InvalidToken} from './error'
+import type { RemoteConnection } from './request';
+import type { LoginObserver } from './observer';
+import { InvalidToken } from './error';
+import User from './user';
+
+export type {
+    RemoteConnection,
+    LoginObserver
+}
 
 export {
-    RemoteConnection,
-    LoginObserver,
-    InvalidToken
+    InvalidToken,
+    User
 }
 
 export default Chimes

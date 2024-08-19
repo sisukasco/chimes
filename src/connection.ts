@@ -36,7 +36,8 @@ export default class Connection
                         return Promise.resolve(resp.data)
                     })
                     .catch((err)=>{
-                        return Promise.reject(err.response.data)    
+                        console.log(" caught error in chimes request ", err)
+                        return Promise.reject(err)    
                     })
         
     }

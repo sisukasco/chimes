@@ -14,16 +14,14 @@ export default class Service implements RemoteConnection {
   }
 
   public async request(path: string, data: any = {}) {
-    
-    let opts = {};
+    let opts: any = {};
     if (this.tokenP) {
       const token = await this.tokenP.getJWTAccessToken();
-      opts = { headers: { Authorization: `Bearer ${token}` } };
+      opts.headers = { Authorization: `Bearer ${token}` };
     }
 
     try {
-      const resp = await this.connection.request(path, { ...opts, ...data });
-      return resp;
+      return await this.connection.request(path, { ...opts, ...data });
     } catch (err) {
       throw err;
     }
