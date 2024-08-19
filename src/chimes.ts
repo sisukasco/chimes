@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
-import qs from 'qs';
 import User, {TokenResponse} from './user';
 import Connection from "./connection";
 import {RemoteConnection} from './request';
@@ -98,35 +97,34 @@ export default class Chimes{
     public letMeKnow(me: LoginObserver){
      this.interestedLogin = me;   
     }
+
     public async login(email: string, password: string) {
-        try{
-            const tok = await this.auth_connection.request('/token',{
-                    method:'post',
-                    data:qs.stringify({
-                        grant_type: "password",
-                        username: email,
-                        password: password
-                    }),
-                    headers: {
-                    'content-type': 'application/x-www-form-urlencoded;charset=utf-8'
-                    }
-                })
-            await this.initUser(tok)
-            if(this.interestedLogin)
-            {
-                this.interestedLogin.onLogin();
+        try {
+          const tok = await this.auth_connection.request('/token', {
+            method: 'POST',
+            data: {
+              grant_type: "password",
+              username: email,
+              password: password
+            },
+            headers: {
+              'content-type': 'application/x-www-form-urlencoded;charset=utf-8'
             }
-            return { ok:true };
+          });
+          await this.initUser(tok);
+          if (this.interestedLogin) {
+            this.interestedLogin.onLogin();
+          }
+          return { ok: true };
+        } catch (err) {
+          console.error("Error caught in login", err);
+          const e = {
+            msg: err instanceof Error ? err.message : 'Unknown error',
+            code: 400 // You might want to improve this to get the correct error code
+          };
+          throw e;
         }
-        catch(err){
-            console.error(" error caught in login ", err)
-            const e ={
-                msg : (err as any).error_description , 
-                code: 400//TODO; get the correct error code in connection error handler
-            };
-            throw e;
-        }
-    }
+      }
     
     public logout(){
         User.clearSession();

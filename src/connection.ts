@@ -1,45 +1,60 @@
-import {joinURL} from './chime-utils';
-import axios, {AxiosInstance, AxiosAdapter} from 'axios';
+import { joinURL } from './chime-utils';
 import qs from 'qs';
 
-import { throttleAdapterEnhancer } from 'axios-extensions';
+export default class Connection {
+  constructor(private api_url: string) {}
 
-export default class Connection
-{
-    private http: AxiosInstance
-    constructor(
-        private api_url: string)
-    {
-        //The current setup only prevents frequent request to the same end point
-        // This works for now.
-        //To add traditional caching, use cacheAdapterEnhancer as well
-        this.http = axios.create({
-            adapter: throttleAdapterEnhancer(axios.defaults.adapter as AxiosAdapter, { threshold: 3 * 1000 } )
-        }); 
-    }  
-    
-    private fullUrl(path: string){
-        return joinURL(this.api_url, path)
+  private fullUrl(path: string) {
+    return joinURL(this.api_url, path);
+  }
+
+  public redirectTo(path: string, params: any) {
+    if (typeof window !== 'undefined' && window.location) {
+      window.location.href = this.fullUrl(path) + "?" + qs.stringify(params);
     }
-    
-    public redirectTo(path: string, params: any){
-        if(window && window.location){
-            window.location.href = this.fullUrl(path)+"?"+qs.stringify(params)    
+  }
+
+  public async request(path: string, options: RequestInit & { data?: any }): Promise<any> {
+    let url = this.fullUrl(path);
+    const { data, ...fetchOptions } = options;
+
+    const defaultOptions: RequestInit = {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+
+    const mergedOptions: RequestInit = { ...defaultOptions, ...fetchOptions };
+
+    if (data) {
+      if (mergedOptions.method === 'GET') {
+        const queryString = qs.stringify(data);
+        url += (url.includes('?') ? '&' : '?') + queryString;
+      } else {
+        const contentType = (mergedOptions.headers as Record<string, string>)['content-type'] || 
+                            (mergedOptions.headers as Record<string, string>)['Content-Type'];
+        
+        if (contentType && contentType.includes('application/x-www-form-urlencoded')) {
+          mergedOptions.body = qs.stringify(data);
+          console.log('Encoded body:', mergedOptions.body);
+          (mergedOptions.headers as Record<string, string>)['Content-Type'] = 'application/x-www-form-urlencoded';
+        } else {
+          mergedOptions.body = JSON.stringify(data);
         }
+      }
     }
-    
-    public async request(path: string, options: any){
-        const defaults = { url: this.fullUrl(path), withCredentials: true }
-        return this.http({...options, ...defaults})
-                    .then((resp)=>
-                    {
-                        return Promise.resolve(resp.data)
-                    })
-                    .catch((err)=>{
-                        console.log(" caught error in chimes request ", err)
-                        return Promise.reject(err)    
-                    })
-        
+
+    try {
+      const response = await fetch(url, mergedOptions);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (err) {
+      console.log("Caught error in chimes request", err);
+      throw err;
     }
-        
+  }
 }
