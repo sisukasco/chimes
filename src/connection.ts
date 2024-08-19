@@ -1,6 +1,26 @@
 import { joinURL } from './chime-utils';
 import qs from 'qs';
 
+interface ErrorResponse {
+  msg?: string;
+  error?: string;
+  [key: string]: any;
+}
+
+export class RequestError extends Error {
+  status: number;
+  data: ErrorResponse;
+  msg: string="";
+
+  constructor(message: string, status: number, data: ErrorResponse) {
+    super(message);
+    this.name = 'RequestError';
+    this.status = status;
+    this.data = data;
+    this.msg=data.msg?data.msg:"";
+  }
+}
+
 export default class Connection {
   constructor(private api_url: string) {}
 
@@ -38,7 +58,6 @@ export default class Connection {
         
         if (contentType && contentType.includes('application/x-www-form-urlencoded')) {
           mergedOptions.body = qs.stringify(data);
-          console.log('Encoded body:', mergedOptions.body);
           (mergedOptions.headers as Record<string, string>)['Content-Type'] = 'application/x-www-form-urlencoded';
         } else {
           mergedOptions.body = JSON.stringify(data);
@@ -48,13 +67,34 @@ export default class Connection {
 
     try {
       const response = await fetch(url, mergedOptions);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      console.log("response from fetch" )
+      console.dir(response, { depth: null });
+      let responseData;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        responseData = await response.json();
+      } else {
+        responseData = await response.text();
       }
-      return await response.json();
+
+      console.log("response data: ")
+      console.dir(responseData, { depth: null });
+
+      if (!response.ok) {
+        throw new RequestError(
+          responseData.msg || responseData.error || 'An error occurred',
+          response.status,
+          responseData
+        );
+      }
+      
+      return responseData;
     } catch (err) {
+      if (err instanceof RequestError) {
+        throw err;
+      }
       console.log("Caught error in chimes request", err);
-      throw err;
+      throw new RequestError('An unexpected error occurred', 500, { msg: err instanceof Error ? err.message : String(err) });
     }
   }
 }
